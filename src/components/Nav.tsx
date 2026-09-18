@@ -5,6 +5,7 @@ import Link from "next/link";
 import { personal } from "@/data/resume";
 import { GitHubIcon, LinkedInIcon, SparkIcon } from "@/components/icons";
 import { ASK_EVENT } from "@/components/chat/AskPanel";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 const LINKS = [
   { href: "#about", label: "About", id: "about" },
@@ -102,6 +103,8 @@ export function Nav() {
         </nav>
 
         <div className="flex items-center gap-3">
+          <ThemeToggle />
+
           <button
             type="button"
             onClick={() => window.dispatchEvent(new Event(ASK_EVENT))}

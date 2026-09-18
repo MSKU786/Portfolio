@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
 import { javascript } from "@codemirror/lang-javascript";
 import {
@@ -9,7 +9,7 @@ import {
   indentUnit,
   syntaxHighlighting,
 } from "@codemirror/language";
-import { EditorState, StateEffect, StateField } from "@codemirror/state";
+import { Compartment, EditorState, StateEffect, StateField } from "@codemirror/state";
 import {
   Decoration,
   EditorView,
@@ -18,6 +18,7 @@ import {
   lineNumbers,
 } from "@codemirror/view";
 import { tags as t } from "@lezer/highlight";
+import { useTheme } from "@/components/theme/ThemeToggle";
 
 /**
  * Loaded only on the client, via `next/dynamic`, so none of CodeMirror lands
@@ -53,59 +54,66 @@ const stepLineField = StateField.define<DecorationSet>({
 
 // -- theme -------------------------------------------------------------------
 
-const theme = EditorView.theme(
-  {
-    "&": {
-      color: "var(--foreground)",
-      backgroundColor: "transparent",
-      fontSize: "13px",
-      height: "100%",
-    },
-    ".cm-scroller": {
-      fontFamily: "var(--font-mono), ui-monospace, monospace",
-      lineHeight: "1.65",
-      padding: "12px 0 24px",
-    },
-    ".cm-content": { caretColor: "var(--accent-soft)" },
-    ".cm-cursor, .cm-dropCursor": { borderLeftColor: "var(--accent-soft)" },
-    "&.cm-focused": { outline: "none" },
-    "&.cm-focused .cm-selectionBackground, .cm-selectionBackground, ::selection": {
-      backgroundColor: "color-mix(in oklab, var(--accent) 32%, transparent)",
-    },
-    ".cm-gutters": {
-      backgroundColor: "transparent",
-      color: "var(--subtle)",
-      border: "none",
-      paddingRight: "4px",
-    },
-    ".cm-lineNumbers .cm-gutterElement": { minWidth: "34px", paddingRight: "10px" },
-    ".cm-activeLineGutter": { backgroundColor: "transparent", color: "var(--muted)" },
-    // The executing line. A left bar rather than a wash, so the code stays
-    // readable underneath it.
-    ".cm-step-line": {
-      backgroundColor: "color-mix(in oklab, var(--accent) 16%, transparent)",
-      boxShadow: "inset 2px 0 0 0 var(--accent-soft)",
-    },
-    ".cm-matchingBracket": {
-      backgroundColor: "color-mix(in oklab, var(--accent-2) 24%, transparent)",
-      outline: "none",
-    },
+const themeSpec = {
+  "&": {
+    color: "var(--foreground)",
+    backgroundColor: "transparent",
+    fontSize: "13px",
+    height: "100%",
   },
-  { dark: true },
-);
+  ".cm-scroller": {
+    fontFamily: "var(--font-mono), ui-monospace, monospace",
+    lineHeight: "1.65",
+    padding: "12px 0 24px",
+  },
+  ".cm-content": { caretColor: "var(--accent-soft)" },
+  ".cm-cursor, .cm-dropCursor": { borderLeftColor: "var(--accent-soft)" },
+  "&.cm-focused": { outline: "none" },
+  "&.cm-focused .cm-selectionBackground, .cm-selectionBackground, ::selection": {
+    backgroundColor: "color-mix(in oklab, var(--accent) 32%, transparent)",
+  },
+  ".cm-gutters": {
+    backgroundColor: "transparent",
+    color: "var(--subtle)",
+    border: "none",
+    paddingRight: "4px",
+  },
+  ".cm-lineNumbers .cm-gutterElement": { minWidth: "34px", paddingRight: "10px" },
+  ".cm-activeLineGutter": { backgroundColor: "transparent", color: "var(--muted)" },
+  // The executing line. A left bar rather than a wash, so the code stays
+  // readable underneath it.
+  ".cm-step-line": {
+    backgroundColor: "color-mix(in oklab, var(--accent) 16%, transparent)",
+    boxShadow: "inset 2px 0 0 0 var(--accent-soft)",
+  },
+  ".cm-matchingBracket": {
+  backgroundColor: "color-mix(in oklab, var(--accent-2) 24%, transparent)",
+  outline: "none",
+  },
+};
+
+/**
+ * Every colour above is a CSS variable, so the palette follows the page for
+ * free. What does not follow for free is CodeMirror's `dark` flag, which
+ * drives its own built-in styling — so the theme extension lives in a
+ * compartment and gets reconfigured when the site theme changes.
+ */
+function editorTheme(dark: boolean) {
+  return EditorView.theme(themeSpec, { dark });
+}
 
 const highlightStyle = HighlightStyle.define([
   { tag: [t.comment, t.lineComment, t.blockComment], color: "var(--subtle)", fontStyle: "italic" },
   { tag: [t.keyword, t.moduleKeyword, t.controlKeyword], color: "var(--accent-soft)" },
   { tag: [t.definitionKeyword, t.operatorKeyword], color: "var(--accent-soft)" },
   { tag: [t.string, t.special(t.string)], color: "var(--live)" },
-  { tag: [t.number, t.bool, t.null], color: "#fbbf24" },
+  { tag: [t.number, t.bool, t.null], color: "var(--cm-number)" },
   { tag: [t.function(t.variableName), t.function(t.propertyName)], color: "var(--accent-2)" },
-  { tag: [t.propertyName], color: "#cbd2e6" },
+  { tag: [t.propertyName], color: "var(--cm-property)" },
   { tag: [t.variableName, t.definition(t.variableName)], color: "var(--foreground)" },
   { tag: [t.operator, t.punctuation, t.separator, t.bracket], color: "var(--muted)" },
   { tag: [t.typeName, t.className, t.namespace], color: "var(--accent-2)" },
-  { tag: t.invalid, color: "#f87171" },
+  { tag: t.invalid, color: "var(--cm-invalid)" },
 ]);
 
 // -- component ---------------------------------------------------------------
@@ -122,6 +130,11 @@ export default function CodeEditor({
 }) {
   const host = useRef<HTMLDivElement>(null);
   const view = useRef<EditorView | null>(null);
+
+  // Safe here because this component is loaded with `ssr: false`, so it only
+  // ever renders once the inline script has settled the theme.
+  const theme = useTheme();
+  const themeSlot = useMemo(() => new Compartment(), []);
 
   // The editor is created once and never torn down on re-render — doing so
   // would lose the cursor and the undo history. So the change handler reaches
@@ -147,7 +160,7 @@ export default function CodeEditor({
           javascript(),
           syntaxHighlighting(highlightStyle),
           stepLineField,
-          theme,
+          themeSlot.of(editorTheme(theme === "dark")),
           EditorView.lineWrapping,
           EditorView.updateListener.of((update) => {
             if (update.docChanged) onChangeRef.current(update.state.doc.toString());
@@ -164,6 +177,12 @@ export default function CodeEditor({
     // Mount once. `value` is synced by the effect below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const editor = view.current;
+    if (!editor) return;
+    editor.dispatch({ effects: themeSlot.reconfigure(editorTheme(theme === "dark")) });
+  }, [theme, themeSlot]);
 
   // Pull in external edits (a preset being loaded) without clobbering typing.
   useEffect(() => {

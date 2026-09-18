@@ -274,7 +274,14 @@ export function EventLoopLab() {
           </div>
 
           {trace.error ? (
-            <p className="rounded-xl border border-[#f87171]/40 bg-[#f87171]/10 px-3 py-2 font-mono text-[11.5px] leading-relaxed text-[#fca5a5]">
+            <p
+              className="rounded-xl border px-3 py-2 font-mono text-[11.5px] leading-relaxed"
+              style={{
+                borderColor: "color-mix(in oklab, var(--danger) 40%, transparent)",
+                background: "color-mix(in oklab, var(--danger) 10%, transparent)",
+                color: "var(--danger)",
+              }}
+            >
               {trace.error}
             </p>
           ) : null}

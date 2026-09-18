@@ -36,7 +36,7 @@ const KIND_COLOR: Record<StepKind, string> = {
   resume: "var(--q-micro)",
   settle: "var(--q-micro)",
   idle: "var(--subtle)",
-  error: "#f87171",
+  error: "var(--danger)",
   done: "var(--live)",
 };
 
@@ -151,7 +151,8 @@ export function Transport({
               className="min-w-0 flex-1 cursor-pointer rounded-[1px] transition-opacity hover:opacity-100"
               style={{
                 background: KIND_COLOR[bucket.kind],
-                opacity: i === activeBucket ? 1 : i < activeBucket ? 0.55 : 0.2,
+                opacity:
+                  i === activeBucket ? 1 : i < activeBucket ? "var(--strip-past)" : "var(--strip-future)",
                 outline: i === activeBucket ? "1px solid var(--foreground)" : "none",
               }}
             />

@@ -3,11 +3,59 @@
 /* ---------------------------------------------------------------------------
    Design tokens
 
-   The site commits to one dark identity rather than shipping a light theme:
-   the whole look is built on luminous accents over deep ink, which is exactly
-   what a light palette cannot reproduce.
+   Two identities from one set of names. Light is the default and therefore
+   lives on bare `:root`; dark is an override keyed off `data-theme`, which an
+   inline script in <head> stamps before first paint.
+
+   The relationships hold in both: `background` is the page, `surface` sits on
+   it, `surface-raised` sits on that. On dark each step gets lighter; on light
+   each step gets whiter. Anything written against the tokens therefore themes
+   itself without knowing which palette is active.
    ------------------------------------------------------------------------- */
 :root {
+  --background: #f2f4f8;
+  --surface: #fafbfd;
+  --surface-raised: #ffffff;
+  --foreground: #12141c;
+  --muted: #545a6b;
+  --subtle: #6f7588;
+  --border: #e1e5ee;
+  --border-strong: #c8cedd;
+
+  /* Accents are darkened for light mode: the dark theme's luminous violet and
+     cyan are for glowing on ink, and fail contrast on paper. */
+  --accent: #7c3aed;
+  --accent-soft: #6d28d9;
+  --accent-2: #0e7490;
+  --live: #15803d;
+  --danger: #dc2626;
+
+  --glow-violet: color-mix(in oklab, var(--accent) 14%, transparent);
+  --glow-cyan: color-mix(in oklab, var(--accent-2) 10%, transparent);
+  --shadow-card: 0 18px 40px -24px color-mix(in oklab, #1e2335 45%, transparent);
+
+  /* Event-loop playground: one hue per queue, reused everywhere that queue
+     appears so a job keeps its colour as it moves between panels. */
+  --q-tick: #0e7490;
+  --q-micro: #6d28d9;
+  --q-timer: #b45309;
+  --q-check: #be185d;
+  --q-io: #15803d;
+  --q-stack: #12141c;
+
+  /* Timeline-strip dimming. Fading toward a light page washes a colour out
+     far faster than fading toward ink does, so light needs higher floors to
+     keep the hues of the different queues apart. */
+  --strip-past: 0.85;
+  --strip-future: 0.42;
+
+  /* Syntax colours the CodeMirror theme cannot express as existing tokens. */
+  --cm-number: #b45309;
+  --cm-property: #374151;
+  --cm-invalid: #b91c1c;
+}
+
+[data-theme="dark"] {
   --background: #06060a;
   --surface: #0c0d14;
   --surface-raised: #12141d;
@@ -21,9 +69,25 @@
   --accent-soft: #a78bfa;
   --accent-2: #22d3ee;
   --live: #4ade80;
+  --danger: #f87171;
 
   --glow-violet: color-mix(in oklab, var(--accent) 40%, transparent);
   --glow-cyan: color-mix(in oklab, var(--accent-2) 32%, transparent);
+  --shadow-card: 0 18px 40px -24px var(--glow-violet);
+
+  --q-tick: #22d3ee;
+  --q-micro: #a78bfa;
+  --q-timer: #fbbf24;
+  --q-check: #f472b6;
+  --q-io: #4ade80;
+  --q-stack: #eceef5;
+
+  --strip-past: 0.55;
+  --strip-future: 0.2;
+
+  --cm-number: #fbbf24;
+  --cm-property: #cbd2e6;
+  --cm-invalid: #f87171;
 }
 
 @theme inline {
@@ -39,6 +103,13 @@
   --color-accent-soft: var(--accent-soft);
   --color-accent-2: var(--accent-2);
   --color-live: var(--live);
+  --color-danger: var(--danger);
+  --color-q-tick: var(--q-tick);
+  --color-q-micro: var(--q-micro);
+  --color-q-timer: var(--q-timer);
+  --color-q-check: var(--q-check);
+  --color-q-io: var(--q-io);
+  --color-q-stack: var(--q-stack);
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -47,7 +118,18 @@
 
 html {
   scroll-behavior: smooth;
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
   color-scheme: dark;
+}
+
+/* The toggle renders both states and CSS reveals one, so the correct icon is
+   painted in the first frame without waiting for JavaScript. */
+[data-theme="dark"] .theme-when-light,
+:root:not([data-theme="dark"]) .theme-when-dark {
+  display: none;
 }
 
 body {
@@ -257,7 +339,7 @@ body {
   background:
     linear-gradient(var(--surface-raised), var(--surface-raised)) padding-box,
     linear-gradient(140deg, var(--accent), var(--accent-2)) border-box;
-  box-shadow: 0 18px 40px -24px var(--glow-violet);
+  box-shadow: var(--shadow-card);
 }
 
 /* Cursor-tracking highlight; --mx / --my are written by the card component. */
@@ -324,5 +406,35 @@ body {
 
   .card:hover {
     transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Event-loop playground
+   ------------------------------------------------------------------------- */
+
+/* A job chip that has just arrived in a queue. Deliberately brief: when you
+   are scrubbing quickly, a long animation reads as lag. */
+@keyframes job-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.job-chip {
+  animation: job-arrive 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .job-chip {
+    animation: none;
+  }
+  .aurora {
+    animation: none;
   }
 }

@@ -251,8 +251,8 @@ export function PhaseTrack({ phase, turn }: { phase: NodePhase | null; turn: num
 
 const LOG_COLOR: Record<LogEntry["method"], string> = {
   log: "var(--foreground)",
-  warn: "#fbbf24",
-  error: "#f87171",
+  warn: "var(--q-timer)",
+  error: "var(--danger)",
 };
 
 export function ConsolePanel({
@@ -371,7 +371,7 @@ const KIND_STYLE: Record<Snapshot["kind"], { color: string; label: string }> = {
   resume: { color: "var(--q-micro)", label: "resume" },
   settle: { color: "var(--q-micro)", label: "settled" },
   idle: { color: "var(--muted)", label: "waiting" },
-  error: { color: "#f87171", label: "error" },
+  error: { color: "var(--danger)", label: "error" },
   done: { color: "var(--live)", label: "done" },
 };
 
