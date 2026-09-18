@@ -13,35 +13,42 @@
    itself without knowing which palette is active.
    ------------------------------------------------------------------------- */
 :root {
-  --background: #f2f4f8;
-  --surface: #fafbfd;
-  --surface-raised: #ffffff;
-  --foreground: #12141c;
-  --muted: #545a6b;
-  --subtle: #6f7588;
-  --border: #e1e5ee;
-  --border-strong: #c8cedd;
+  /* Dimmed on purpose. A near-white page with near-black text measures well
+     and still glares: the page reads as a lamp rather than a surface. Holding
+     the page around L*90 and the body text near 12:1 keeps it comfortable for
+     long reading while staying far clear of the AA floor. */
+  --background: #dfe3ec;
+  --surface: #e9ecf3;
+  --surface-raised: #f4f6fa;
+  --foreground: #1e222d;
+  --muted: #4c5263;
+  --subtle: #5c6274;
+  --border: #ccd2df;
+  --border-strong: #aeb6c7;
 
   /* Accents are darkened for light mode: the dark theme's luminous violet and
-     cyan are for glowing on ink, and fail contrast on paper. */
+     cyan are for glowing on ink, and fail contrast on paper. Dimming the page
+     costs contrast too, so every token below that is ever painted as *text*
+     is darkened again to clear AA against it — measured, not eyeballed.
+     `--accent` is exempt because it is only ever a fill or a border. */
   --accent: #7c3aed;
   --accent-soft: #6d28d9;
-  --accent-2: #0e7490;
-  --live: #15803d;
-  --danger: #dc2626;
+  --accent-2: #155e75;
+  --live: #166534;
+  --danger: #b91c1c;
 
-  --glow-violet: color-mix(in oklab, var(--accent) 14%, transparent);
-  --glow-cyan: color-mix(in oklab, var(--accent-2) 10%, transparent);
-  --shadow-card: 0 18px 40px -24px color-mix(in oklab, #1e2335 45%, transparent);
+  --glow-violet: color-mix(in oklab, var(--accent) 16%, transparent);
+  --glow-cyan: color-mix(in oklab, var(--accent-2) 12%, transparent);
+  --shadow-card: 0 18px 40px -22px color-mix(in oklab, #10131c 55%, transparent);
 
   /* Event-loop playground: one hue per queue, reused everywhere that queue
      appears so a job keeps its colour as it moves between panels. */
-  --q-tick: #0e7490;
+  --q-tick: #155e75;
   --q-micro: #6d28d9;
-  --q-timer: #b45309;
-  --q-check: #be185d;
-  --q-io: #15803d;
-  --q-stack: #12141c;
+  --q-timer: #92400e;
+  --q-check: #a21a52;
+  --q-io: #166534;
+  --q-stack: #1e222d;
 
   /* Timeline-strip dimming. Fading toward a light page washes a colour out
      far faster than fading toward ink does, so light needs higher floors to
@@ -50,7 +57,7 @@
   --strip-future: 0.42;
 
   /* Syntax colours the CodeMirror theme cannot express as existing tokens. */
-  --cm-number: #b45309;
+  --cm-number: #92400e;
   --cm-property: #374151;
   --cm-invalid: #b91c1c;
 }
@@ -61,7 +68,7 @@
   --surface-raised: #12141d;
   --foreground: #eceef5;
   --muted: #8b90a6;
-  --subtle: #5d6175;
+  --subtle: #727892;
   --border: #1c1f2b;
   --border-strong: #2b3040;
 
