@@ -523,7 +523,3 @@ function unwrap(err: unknown): unknown {
     ? (err as { value: unknown }).value
     : err;
 }
-
-// Re-exported so the UI can describe the sandbox honestly in its help panel.
-export const SANDBOX_FILES = Object.keys(FAKE_FILES);
-export const SANDBOX_LATENCY = DEFAULT_LATENCY;

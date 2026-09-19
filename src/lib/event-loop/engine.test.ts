@@ -12,7 +12,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { buildTrace } from "./interpreter";
-import { SCENARIOS } from "./scenarios";
+import { SAMPLES } from "./samples";
 import type { Runtime } from "./types";
 
 function outputOf(code: string, runtime: Runtime): string[] {
@@ -262,17 +262,37 @@ test("top-level await is refused with an actionable message", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Every shipped preset must run clean
+// The sample each editor opens with must run clean
 // ---------------------------------------------------------------------------
 
-for (const runtime of ["node", "browser"] as Runtime[]) {
-  for (const scenario of SCENARIOS[runtime]) {
-    test(`preset runs clean: [${runtime}] ${scenario.title}`, () => {
-      const trace = buildTrace(scenario.code, runtime);
-      assert.equal(trace.error, null, `${scenario.id}: ${trace.error}`);
-      assert.ok(trace.snapshots.length > 3, `${scenario.id} produced almost no steps`);
-      assert.ok(trace.logs.length > 0, `${scenario.id} printed nothing`);
-      assert.equal(trace.truncated, false, `${scenario.id} hit a budget limit`);
-    });
-  }
+for (const runtime of ["browser", "node"] as Runtime[]) {
+  test(`sample runs clean: ${runtime}`, () => {
+    const trace = buildTrace(SAMPLES[runtime], runtime);
+    assert.equal(trace.error, null, `${runtime}: ${trace.error}`);
+    assert.ok(trace.snapshots.length > 3, `${runtime} produced almost no steps`);
+    assert.ok(trace.logs.length > 0, `${runtime} printed nothing`);
+    assert.equal(trace.truncated, false, `${runtime} hit a budget limit`);
+  });
 }
+
+test("browser sample: sync, then microtasks, then tasks", () => {
+  assert.deepEqual(outputOf(SAMPLES.browser, "browser"), [
+    "start",
+    "end",
+    "promise",
+    "timeout",
+    "fetched 200",
+  ]);
+});
+
+test("node sample: sync, nextTick, microtasks, then the phases", () => {
+  assert.deepEqual(outputOf(SAMPLES.node, "node"), [
+    "start",
+    "end",
+    "nextTick",
+    "promise",
+    "immediate",
+    "timeout",
+    "file: the quick brown fox",
+  ]);
+});

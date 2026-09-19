@@ -48,7 +48,11 @@
   --q-timer: #92400e;
   --q-check: #a21a52;
   --q-io: #166534;
-  --q-stack: #1e222d;
+  --q-stack: #1d4ed8;
+  --q-pending: #475569;
+  /* Text on a solid queue-coloured chip. Light-mode queue colours are deep,
+     so white reads on all of them; dark-mode ones are bright, so ink does. */
+  --chip-ink: #ffffff;
 
   /* Timeline-strip dimming. Fading toward a light page washes a colour out
      far faster than fading toward ink does, so light needs higher floors to
@@ -87,7 +91,9 @@
   --q-timer: #fbbf24;
   --q-check: #f472b6;
   --q-io: #4ade80;
-  --q-stack: #eceef5;
+  --q-stack: #60a5fa;
+  --q-pending: #94a3b8;
+  --chip-ink: #0b0c12;
 
   --strip-past: 0.55;
   --strip-future: 0.2;
@@ -117,6 +123,7 @@
   --color-q-check: var(--q-check);
   --color-q-io: var(--q-io);
   --color-q-stack: var(--q-stack);
+  --color-q-pending: var(--q-pending);
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);

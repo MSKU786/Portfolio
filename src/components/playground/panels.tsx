@@ -10,238 +10,163 @@ import { NODE_PHASES } from "@/lib/event-loop/types";
  */
 
 // ---------------------------------------------------------------------------
-// Shared shell
+// Columns
 // ---------------------------------------------------------------------------
 
-function Panel({
+/**
+ * One tall column per queue. The colour is the column's identity: a solid bar
+ * on top, a faint wash behind, and solid chips inside — so a job is readable
+ * at a glance and keeps its colour wherever it appears.
+ */
+function Column({
   title,
-  hint,
-  accent,
+  color,
   count,
   children,
-  className = "",
 }: {
   title: string;
-  hint?: string;
-  /** CSS colour driving the rail, dot and count badge. */
-  accent: string;
-  count?: number;
+  color: string;
+  count: number;
   children: React.ReactNode;
-  className?: string;
 }) {
   return (
     <section
-      className={`flex min-h-0 flex-col rounded-xl border border-border bg-surface/60 ${className}`}
-      style={{ ["--panel-accent" as string]: accent }}
+      className="flex h-56 min-w-0 flex-col overflow-hidden rounded-xl border border-border lg:h-72"
+      style={{
+        borderTop: `3px solid ${color}`,
+        background: `color-mix(in oklab, ${color} 7%, var(--surface))`,
+      }}
     >
-      <header className="flex items-center gap-2 border-b border-border/70 px-3 py-2">
+      <header className="flex items-center gap-2 px-2.5 py-2">
+        <h3 className="min-w-0 flex-1 truncate font-mono text-[11px] font-semibold text-foreground">
+          {title}
+        </h3>
         <span
-          aria-hidden
-          className="size-1.5 shrink-0 rounded-full"
-          style={{ background: "var(--panel-accent)" }}
-        />
-        <h3 className="font-mono text-[11px] font-medium tracking-wide text-foreground">{title}</h3>
-        {hint ? <p className="truncate text-[10px] text-subtle">{hint}</p> : null}
-        {count !== undefined ? (
-          <span
-            className="ml-auto shrink-0 rounded-full px-1.5 py-0.5 font-mono text-[10px] tabular-nums"
-            style={{
-              background:
-                count > 0 ? "color-mix(in oklab, var(--panel-accent) 18%, transparent)" : "transparent",
-              color: count > 0 ? "var(--panel-accent)" : "var(--subtle)",
-            }}
-          >
-            {count}
-          </span>
-        ) : null}
+          className="shrink-0 rounded-full px-1.5 py-0.5 font-mono text-[10px] font-semibold tabular-nums"
+          style={
+            count > 0
+              ? { background: color, color: "var(--chip-ink)" }
+              : { color: "var(--subtle)" }
+          }
+        >
+          {count}
+        </span>
       </header>
-      <div className="min-h-0 flex-1 overflow-y-auto p-2">{children}</div>
+      <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-2">{children}</div>
     </section>
   );
 }
 
-function Empty({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="px-1 py-1.5 font-mono text-[11px] text-subtle/70 italic">{children}</p>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Queues
-// ---------------------------------------------------------------------------
-
-function JobChip({ item, accent, index }: { item: QueueItem; accent: string; index?: number }) {
+function Chip({
+  label,
+  meta,
+  color,
+  emphasis = false,
+  title,
+}: {
+  label: string;
+  meta?: string;
+  color: string;
+  /** The running frame: gets a ring so it stands out from the rest. */
+  emphasis?: boolean;
+  title?: string;
+}) {
   return (
     <li
-      // Keyed animation: a chip re-animates only when it is genuinely new.
-      className="job-chip flex items-baseline gap-2 rounded-md px-2 py-1.5"
-      style={{ background: `color-mix(in oklab, ${accent} 10%, transparent)` }}
-      title={item.detail}
+      className="job-chip flex items-baseline gap-2 rounded-md px-2 py-1.5 shadow-sm"
+      style={{
+        background: color,
+        color: "var(--chip-ink)",
+        boxShadow: emphasis ? `0 0 0 2px var(--background), 0 0 0 4px ${color}` : undefined,
+      }}
+      title={title}
     >
-      {index !== undefined ? (
-        <span className="font-mono text-[10px] tabular-nums text-subtle">{index + 1}</span>
-      ) : null}
-      <span className="min-w-0 flex-1 truncate font-mono text-[11px]" style={{ color: accent }}>
-        {item.label}
-      </span>
-      {item.dueAt !== undefined ? (
-        <span className="shrink-0 font-mono text-[10px] tabular-nums text-subtle">
-          {item.dueAt}ms
-        </span>
-      ) : item.line !== null ? (
-        <span className="shrink-0 font-mono text-[10px] tabular-nums text-subtle">
-          L{item.line}
-        </span>
+      <span className="min-w-0 flex-1 truncate font-mono text-[11px] font-medium">{label}</span>
+      {meta ? (
+        <span className="shrink-0 font-mono text-[10px] tabular-nums opacity-80">{meta}</span>
       ) : null}
     </li>
   );
 }
 
-export function QueuePanel({
+export function QueueColumn({
   title,
-  hint,
-  accent,
+  color,
   items,
-  empty,
-  numbered = true,
-  className,
+  showDue = false,
+  clock = 0,
 }: {
   title: string;
-  hint?: string;
-  accent: string;
+  color: string;
   items: QueueItem[];
-  empty: string;
-  numbered?: boolean;
-  className?: string;
+  /** Show a countdown instead of the source line (for parked timers and I/O). */
+  showDue?: boolean;
+  clock?: number;
 }) {
   return (
-    <Panel title={title} hint={hint} accent={accent} count={items.length} className={className}>
-      {items.length === 0 ? (
-        <Empty>{empty}</Empty>
-      ) : (
-        <ul className="flex flex-col gap-1">
-          {items.map((item, i) => (
-            <JobChip key={item.id} item={item} accent={accent} index={numbered ? i : undefined} />
-          ))}
-        </ul>
-      )}
-    </Panel>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Call stack
-// ---------------------------------------------------------------------------
-
-export function CallStackPanel({
-  frames,
-  className,
-}: {
-  frames: StackFrame[];
-  className?: string;
-}) {
-  return (
-    <Panel
-      title="Call stack"
-      hint="top frame runs"
-      accent="var(--q-stack)"
-      count={frames.length}
-      className={className}
-    >
-      {frames.length === 0 ? (
-        <Empty>empty — the loop is free to pick up queued work</Empty>
-      ) : (
-        <ul className="flex flex-col-reverse gap-1">
-          {frames.map((frame, i) => {
-            const isTop = i === frames.length - 1;
-            return (
-              <li
-                key={`${frame.name}-${i}`}
-                className="job-chip flex items-baseline gap-2 rounded-md border px-2 py-1.5"
-                style={{
-                  borderColor: isTop ? "color-mix(in oklab, var(--accent-soft) 45%, transparent)" : "transparent",
-                  background: isTop
-                    ? "color-mix(in oklab, var(--accent) 14%, transparent)"
-                    : "color-mix(in oklab, var(--foreground) 5%, transparent)",
-                }}
-              >
-                <span
-                  className="min-w-0 flex-1 truncate font-mono text-[11px]"
-                  style={{ color: isTop ? "var(--foreground)" : "var(--muted)" }}
-                >
-                  {frame.name}
-                </span>
-                {frame.kind === "async" ? (
-                  <span className="shrink-0 rounded px-1 font-mono text-[9px] tracking-wide text-q-micro">
-                    async
-                  </span>
-                ) : null}
-                {frame.line !== null ? (
-                  <span className="shrink-0 font-mono text-[10px] tabular-nums text-subtle">
-                    L{frame.line}
-                  </span>
-                ) : null}
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </Panel>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Node phase track
-// ---------------------------------------------------------------------------
-
-const PHASE_LABELS: Record<NodePhase, { label: string; hint: string }> = {
-  timers: { label: "timers", hint: "expired setTimeout / setInterval" },
-  pending: { label: "pending", hint: "deferred system callbacks" },
-  poll: { label: "poll", hint: "completed I/O — the loop waits here" },
-  check: { label: "check", hint: "setImmediate" },
-  close: { label: "close", hint: "'close' events" },
-};
-
-export function PhaseTrack({ phase, turn }: { phase: NodePhase | null; turn: number }) {
-  return (
-    <div className="rounded-xl border border-border bg-surface/60 p-2.5">
-      <div className="mb-2 flex items-baseline justify-between gap-2">
-        <h3 className="font-mono text-[11px] font-medium text-foreground">libuv phases</h3>
-        <span className="font-mono text-[10px] tabular-nums text-subtle">
-          {turn > 0 ? `turn ${turn}` : "not started"}
-        </span>
-      </div>
-      <ol className="flex flex-wrap items-stretch gap-1">
-        {NODE_PHASES.map((name) => {
-          const active = phase === name;
+    <Column title={title} color={color} count={items.length}>
+      <ul className="flex flex-col gap-1.5 pt-0.5">
+        {items.map((item) => {
+          const meta = showDue
+            ? (item.dueAt ?? clock) - clock <= 0
+              ? "due"
+              : `${(item.dueAt ?? clock) - clock}ms`
+            : item.line !== null
+              ? `L${item.line}`
+              : undefined;
           return (
-            <li
-              key={name}
-              title={PHASE_LABELS[name].hint}
-              className="flex-1 rounded-md border px-1.5 py-1 text-center transition-colors"
-              style={{
-                borderColor: active
-                  ? "color-mix(in oklab, var(--accent-2) 55%, transparent)"
-                  : "var(--border)",
-                background: active
-                  ? "color-mix(in oklab, var(--accent-2) 16%, transparent)"
-                  : "transparent",
-              }}
-            >
-              <span
-                className="font-mono text-[10px]"
-                style={{ color: active ? "var(--accent-2)" : "var(--subtle)" }}
-              >
-                {PHASE_LABELS[name].label}
-              </span>
-            </li>
+            <Chip key={item.id} label={item.label} meta={meta} color={color} title={item.detail} />
           );
         })}
-      </ol>
-      <p className="mt-2 font-mono text-[10px] leading-relaxed text-subtle">
-        nextTick + microtasks drain between <em className="not-italic text-muted">every</em> phase.
-      </p>
-    </div>
+      </ul>
+    </Column>
+  );
+}
+
+/** Frames stack upward from the bottom, like the stack they are. */
+export function StackColumn({ frames }: { frames: StackFrame[] }) {
+  return (
+    <Column title="Call stack" color="var(--q-stack)" count={frames.length}>
+      <ul className="flex h-full flex-col-reverse gap-1.5 pb-0.5">
+        {frames.map((frame, i) => (
+          <Chip
+            key={`${frame.name}-${i}`}
+            label={frame.kind === "async" ? `${frame.name} · async` : frame.name}
+            meta={frame.line !== null ? `L${frame.line}` : undefined}
+            color="var(--q-stack)"
+            emphasis={i === frames.length - 1}
+          />
+        ))}
+      </ul>
+    </Column>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Node phase strip
+// ---------------------------------------------------------------------------
+
+export function PhaseStrip({ phase }: { phase: NodePhase | null }) {
+  return (
+    <ol className="flex gap-1" aria-label="Event loop phase">
+      {NODE_PHASES.map((name) => {
+        const active = phase === name;
+        return (
+          <li
+            key={name}
+            aria-current={active ? "step" : undefined}
+            className="flex-1 rounded-md px-2 py-1 text-center font-mono text-[10.5px] font-medium transition-colors"
+            style={
+              active
+                ? { background: "var(--accent-2)", color: "var(--chip-ink)" }
+                : { background: "var(--background)", color: "var(--subtle)" }
+            }
+          >
+            {name}
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 
@@ -258,101 +183,39 @@ const LOG_COLOR: Record<LogEntry["method"], string> = {
 export function ConsolePanel({
   logs,
   visibleCount,
-  className,
 }: {
   logs: LogEntry[];
   /** How many entries exist at the current step; later ones are dimmed. */
   visibleCount: number;
-  className?: string;
 }) {
   return (
-    <Panel
-      title="console"
-      hint="output so far"
-      accent="var(--q-io)"
-      count={visibleCount}
-      className={className}
-    >
-      {logs.length === 0 ? (
-        <Empty>nothing printed yet</Empty>
-      ) : (
-        <ul className="flex flex-col gap-0.5">
-          {logs.map((entry, i) => {
-            const printed = i < visibleCount;
-            return (
-              <li
-                key={entry.id}
-                className="flex items-baseline gap-2 rounded px-1 py-0.5 transition-opacity"
-                style={{ opacity: printed ? 1 : 0.22 }}
-              >
-                <span className="w-12 shrink-0 text-right font-mono text-[10px] tabular-nums text-subtle">
-                  {entry.at}ms
-                </span>
-                <span
-                  className="min-w-0 flex-1 font-mono text-[11px] break-words whitespace-pre-wrap"
-                  style={{ color: LOG_COLOR[entry.method] }}
-                >
-                  {entry.text}
-                </span>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </Panel>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Pending / parked work
-// ---------------------------------------------------------------------------
-
-export function PendingPanel({
-  items,
-  runtime,
-  clock,
-  className,
-}: {
-  items: QueueItem[];
-  runtime: "node" | "browser";
-  clock: number;
-  className?: string;
-}) {
-  return (
-    <Panel
-      title={runtime === "node" ? "timer heap + thread pool" : "Web APIs"}
-      hint="outside the loop"
-      accent="var(--q-timer)"
-      count={items.length}
-      className={className}
-    >
-      {items.length === 0 ? (
-        <Empty>nothing in flight</Empty>
-      ) : (
-        <ul className="flex flex-col gap-1">
-          {items.map((item) => {
-            const remaining = (item.dueAt ?? clock) - clock;
-            return (
-              <li
-                key={item.id}
-                className="job-chip rounded-md px-2 py-1.5"
-                style={{ background: "color-mix(in oklab, var(--q-timer) 10%, transparent)" }}
-                title={item.detail}
-              >
-                <div className="flex items-baseline gap-2">
-                  <span className="min-w-0 flex-1 truncate font-mono text-[11px] text-q-timer">
-                    {item.label}
-                  </span>
-                  <span className="shrink-0 font-mono text-[10px] tabular-nums text-subtle">
-                    {remaining <= 0 ? "due" : `in ${remaining}ms`}
-                  </span>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </Panel>
+    <section className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-surface">
+      <header className="flex items-center gap-2 border-b border-border px-3 py-2">
+        <h3 className="flex-1 font-mono text-[11px] font-semibold text-foreground">Console</h3>
+        <span className="font-mono text-[10px] tabular-nums text-subtle">{visibleCount}</span>
+      </header>
+      <ul className="min-h-0 flex-1 overflow-y-auto p-2">
+        {logs.map((entry, i) => (
+          <li
+            key={entry.id}
+            className="flex items-baseline gap-2 rounded px-1 py-0.5 transition-opacity"
+            // Lines that have not been printed yet at this step stay faintly
+            // visible, so you can see what is still coming.
+            style={{ opacity: i < visibleCount ? 1 : 0.2 }}
+          >
+            <span className="w-11 shrink-0 text-right font-mono text-[10px] tabular-nums text-subtle">
+              {entry.at}ms
+            </span>
+            <span
+              className="min-w-0 flex-1 break-words whitespace-pre-wrap font-mono text-[11.5px]"
+              style={{ color: LOG_COLOR[entry.method] }}
+            >
+              {entry.text}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
@@ -361,7 +224,7 @@ export function PendingPanel({
 // ---------------------------------------------------------------------------
 
 const KIND_STYLE: Record<Snapshot["kind"], { color: string; label: string }> = {
-  start: { color: "var(--muted)", label: "start" },
+  start: { color: "var(--subtle)", label: "start" },
   sync: { color: "var(--q-stack)", label: "sync" },
   enqueue: { color: "var(--q-timer)", label: "queued" },
   dequeue: { color: "var(--accent-2)", label: "running" },
@@ -370,33 +233,23 @@ const KIND_STYLE: Record<Snapshot["kind"], { color: string; label: string }> = {
   suspend: { color: "var(--q-micro)", label: "await" },
   resume: { color: "var(--q-micro)", label: "resume" },
   settle: { color: "var(--q-micro)", label: "settled" },
-  idle: { color: "var(--muted)", label: "waiting" },
+  idle: { color: "var(--subtle)", label: "waiting" },
   error: { color: "var(--danger)", label: "error" },
   done: { color: "var(--live)", label: "done" },
 };
 
 export function Narration({ snapshot }: { snapshot: Snapshot | null }) {
-  if (!snapshot) {
-    return (
-      <p className="font-mono text-[12px] text-subtle">
-        Press <span className="text-muted">Run</span> to build a trace, then step through it.
-      </p>
-    );
-  }
-
+  if (!snapshot) return null;
   const style = KIND_STYLE[snapshot.kind];
   return (
     <div className="flex min-w-0 items-baseline gap-2.5">
       <span
-        className="shrink-0 rounded px-1.5 py-0.5 font-mono text-[10px] tracking-wide"
-        style={{
-          background: `color-mix(in oklab, ${style.color} 16%, transparent)`,
-          color: style.color,
-        }}
+        className="shrink-0 rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold"
+        style={{ background: style.color, color: "var(--chip-ink)" }}
       >
         {style.label}
       </span>
-      <p className="min-w-0 flex-1 text-[12.5px] leading-snug text-foreground">{snapshot.note}</p>
+      <p className="min-w-0 flex-1 text-[13px] leading-snug text-foreground">{snapshot.note}</p>
       <span className="shrink-0 font-mono text-[10px] tabular-nums text-subtle">
         {snapshot.clock}ms
       </span>
