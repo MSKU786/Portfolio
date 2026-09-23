@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useRouter } from "next/navigation";
 import { personal } from "@/data/resume";
 import { MAX_QUESTION_LENGTH, type SourceRef } from "@/lib/chat-protocol";
 import { useAskChat, type ChatTurn } from "@/components/chat/useAskChat";
@@ -36,9 +37,9 @@ function prefersReducedMotion() {
  * Scrolls to the page section a passage came from and flashes it, so an answer
  * can be checked against the resume it was drawn from.
  */
-function revealSource(anchor: string) {
+function revealSource(anchor: string): boolean {
   const target = document.getElementById(anchor);
-  if (!target) return;
+  if (!target) return false;
 
   target.scrollIntoView({
     behavior: prefersReducedMotion() ? "auto" : "smooth",
@@ -50,6 +51,7 @@ function revealSource(anchor: string) {
   void target.offsetWidth;
   target.classList.add("cited");
   window.setTimeout(() => target.classList.remove("cited"), 2600);
+  return true;
 }
 
 /**
@@ -277,7 +279,16 @@ function Turn({
   );
 }
 
-export function AskPanel() {
+export function AskPanel({
+  showLauncher = true,
+}: {
+  /**
+   * The floating "Ask about me" button. Pages whose content runs to the
+   * bottom-right corner (the playground's queue columns) turn it off and rely
+   * on the nav's Ask button and ⌘K instead.
+   */
+  showLauncher?: boolean;
+} = {}) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState("");
   const { turns, isStreaming, send, stop, reset } = useAskChat();
@@ -324,15 +335,23 @@ export function AskPanel() {
     [isStreaming, send],
   );
 
-  const onSelectSource = useCallback((anchor: string) => {
-    // On phones the panel covers the page, so step out of the way first.
-    if (window.innerWidth < 768) setOpen(false);
-    window.setTimeout(() => revealSource(anchor), 60);
-  }, []);
+  const router = useRouter();
+  const onSelectSource = useCallback(
+    (anchor: string) => {
+      // On phones the panel covers the page, so step out of the way first.
+      if (window.innerWidth < 768) setOpen(false);
+      window.setTimeout(() => {
+        // Resume sections only exist on the homepage. From anywhere else (the
+        // playground), a citation takes you there rather than doing nothing.
+        if (!revealSource(anchor)) router.push(`/#${anchor}`);
+      }, 60);
+    },
+    [router],
+  );
 
   return (
     <>
-      {!open && (
+      {!open && showLauncher && (
         <button
           type="button"
           onClick={() => setOpen(true)}

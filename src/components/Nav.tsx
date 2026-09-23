@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { personal } from "@/data/resume";
 import { GitHubIcon, LinkedInIcon, SparkIcon } from "@/components/icons";
 import { ASK_EVENT } from "@/components/chat/AskPanel";
@@ -16,6 +17,12 @@ const LINKS = [
 ];
 
 export function Nav() {
+  // The nav is shared by the homepage and the playground. Section links are
+  // in-page anchors on the homepage and must route back to it from elsewhere.
+  const pathname = usePathname();
+  const onHome = pathname === "/";
+  const onPlayground = pathname.startsWith("/playground");
+
   const [activeId, setActiveId] = useState<string>("");
   const [progress, setProgress] = useState(0);
 
@@ -67,7 +74,7 @@ export function Nav() {
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-6 py-3.5">
         <Link
-          href="#top"
+          href={onHome ? "#top" : "/"}
           className="font-mono text-sm font-semibold tracking-tight text-foreground"
         >
           manish<span className="text-gradient-accent">.dev</span>
@@ -79,7 +86,7 @@ export function Nav() {
             return (
               <Link
                 key={link.href}
-                href={link.href}
+                href={onHome ? link.href : `/${link.href}`}
                 aria-current={active ? "true" : undefined}
                 className={`rounded-md px-3 py-1.5 text-sm transition-colors ${
                   active
@@ -96,7 +103,10 @@ export function Nav() {
           <span aria-hidden className="mx-1 h-4 w-px bg-border-strong" />
           <Link
             href="/playground"
-            className="rounded-md px-3 py-1.5 text-sm text-muted transition-colors hover:text-foreground"
+            aria-current={onPlayground ? "page" : undefined}
+            className={`rounded-md px-3 py-1.5 text-sm transition-colors ${
+              onPlayground ? "bg-surface text-foreground" : "text-muted hover:text-foreground"
+            }`}
           >
             Playground
           </Link>
