@@ -67,7 +67,10 @@ export const experience: Experience[] = [
     period: "Aug 2021 – Apr 2022",
     skills: ["React.js", "Next.js", "GraphQL", "Firebase", "TailwindCSS"],
     highlights: [
-      "Replaced per-day calendar booking requests with a single aggregated monthly GraphQL query, cutting API load and improving load time by 60%; lifted overall user engagement by 30%.",
+      "Built and maintained the GraphQL API behind the booking product — schema, resolvers, and data access over Firebase — serving the Next.js front end.",
+      "Replaced per-day availability lookups with a single aggregated monthly GraphQL query, returning a full month of seat availability in one request instead of one call per date; cut API load and improved load time by 60%, lifting user engagement by 30%.",
+      "Shipped new customer-facing pages and a set of reusable React components in Next.js and TailwindCSS.",
+      "Improved front-end page speed and API response latency across the product, profiling slow pages and cutting request overhead on the API.",
     ],
   },
 ];

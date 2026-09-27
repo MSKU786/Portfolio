@@ -134,7 +134,7 @@ export function EventLoopSection({ runtime }: { runtime: Runtime }) {
     <section
       aria-labelledby={headingId}
       onKeyDown={onKeyDown}
-      className="mx-auto w-full max-w-[1500px] px-4 py-10 sm:px-6"
+      className="mx-auto w-full max-w-[1500px] scroll-mt-20 px-4 py-10 sm:px-6"
     >
       <header className="mb-4 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
         <h2 id={headingId} className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
