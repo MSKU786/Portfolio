@@ -37,8 +37,11 @@ export const experience: Experience[] = [
     location: "Bengaluru, IN",
     role: "Senior Software Engineer",
     period: "Apr 2023 – Present",
-    skills: ["Node.js", "Python", "AWS", "Kubernetes", "Vertex AI", "PostgreSQL"],
+    skills: ["Node.js", "Python", "AWS", "Kubernetes", "Vertex AI", "Langfuse", "PostgreSQL"],
     highlights: [
+      "Built an end-to-end LLM evaluation pipeline processing 50K+ production traces per day from Langfuse, using GPT-4.1 mini to classify unanswered queries into a self-evolving topic/subtopic taxonomy per tenant.",
+      "Designed a trend-resolution job that tracks each category's 14-day success rate, automatically marking knowledge gaps as resolved and flagging regressions.",
+      "Surfaced results in a tenant-scoped customer dashboard showing which common queries the assistant cannot answer, so customers know which data sources to add.",
       "Designed a multi-agent RCA agentic workflow (via MCP + Jira integration) that classifies issues and identifies root cause using structured LLM outputs, eliminating manual investigation for 70% of reported issues.",
       "Developed the trace-resolver cron job to retroactively update query traces when tenants add training data; introduced a date-scoped UI filter (default: last 2 weeks) to remove stale low-confidence suggestions.",
       "Upgraded Smart Discovery to v5 — built a semantic search pipeline generating embeddings from crawled site content and indexing them in Pinecone; migrated ~90% of customers to v5.",
