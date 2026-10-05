@@ -1,3 +1,12 @@
+/**
+ * PARKED FOR PHASE 2.
+ *
+ * The leading underscore on `_chat` makes this a Next.js private folder, so
+ * the file is kept verbatim but is not routed and ships nothing. To bring the
+ * assistant back: rename the folder to `chat`, restore the `AskPanel` /
+ * `AskTrigger` call sites, and set ANTHROPIC_API_KEY on the deployment.
+ */
+
 import Anthropic from "@anthropic-ai/sdk";
 import { personal } from "@/data/resume";
 import { CHUNKS } from "@/lib/knowledge";

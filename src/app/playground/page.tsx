@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Nav } from "@/components/Nav";
-import { AskPanel } from "@/components/chat/AskPanel";
 import { EventLoopSection } from "@/components/playground/EventLoopSection";
 
 export const metadata: Metadata = {
@@ -39,9 +38,6 @@ export default function PlaygroundPage() {
         </div>
         <EventLoopSection runtime="node" />
       </main>
-      {/* The nav's Ask button opens this, so it has to be mounted here too —
-          minus the floating launcher, which would sit on top of the columns. */}
-      <AskPanel showLauncher={false} />
     </>
   );
 }

@@ -8,7 +8,7 @@ export function Footer() {
           &copy; {new Date().getFullYear()} {personal.name}
         </p>
         <p>
-          Next.js · Tailwind · BM25 retrieval · Claude
+          Next.js · TypeScript · Tailwind
         </p>
       </div>
     </footer>

@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { personal } from "@/data/resume";
-import { GitHubIcon, LinkedInIcon, SparkIcon } from "@/components/icons";
-import { ASK_EVENT } from "@/components/chat/AskPanel";
+import { GitHubIcon, LinkedInIcon } from "@/components/icons";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 const LINKS = [
@@ -114,18 +113,6 @@ export function Nav() {
 
         <div className="flex items-center gap-3">
           <ThemeToggle />
-
-          <button
-            type="button"
-            onClick={() => window.dispatchEvent(new Event(ASK_EVENT))}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border-strong px-2.5 py-1.5 text-xs font-medium text-muted transition-colors hover:border-accent hover:text-foreground"
-          >
-            <SparkIcon className="size-3.5 text-accent-soft" />
-            <span className="hidden sm:inline">Ask</span>
-            <kbd className="hidden font-mono text-[10px] text-subtle lg:inline">
-              ⌘K
-            </kbd>
-          </button>
 
           <a
             href={personal.social.github}

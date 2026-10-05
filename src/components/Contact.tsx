@@ -1,7 +1,6 @@
 import { Section } from "@/components/Section";
 import { Reveal } from "@/components/Reveal";
 import { personal } from "@/data/resume";
-import { AskTrigger } from "@/components/chat/AskTrigger";
 import { GitHubIcon, LeetCodeIcon, LinkedInIcon } from "@/components/icons";
 
 const SOCIALS = [
@@ -31,7 +30,7 @@ export function Contact() {
 
             <p className="max-w-md text-sm leading-relaxed text-muted">
               Open to senior engineering roles and interesting problems. Drop me
-              a line — or ask the assistant anything first.
+              a line.
             </p>
 
             <div className="flex flex-wrap items-center justify-center gap-3">
@@ -41,9 +40,6 @@ export function Contact() {
               >
                 {personal.email}
               </a>
-              <AskTrigger className="inline-flex items-center gap-2 rounded-lg border border-border-strong px-5 py-3 text-sm font-medium text-foreground transition-colors hover:border-accent hover:text-accent-soft">
-                Ask about my work
-              </AskTrigger>
             </div>
 
             <div className="flex items-center gap-5 pt-2">

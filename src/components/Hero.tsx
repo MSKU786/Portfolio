@@ -1,6 +1,5 @@
 import { personal, experience } from "@/data/resume";
 import { RotatingRoles } from "@/components/RotatingRoles";
-import { AskTrigger } from "@/components/chat/AskTrigger";
 import { Reveal } from "@/components/Reveal";
 import {
   ArrowDownIcon,
@@ -66,15 +65,18 @@ export function Hero() {
 
         <Reveal delay={320}>
           <div className="mt-2 flex flex-wrap items-center gap-3">
-            <AskTrigger className="group inline-flex items-center gap-2 rounded-lg bg-linear-to-r from-accent to-accent-2 px-5 py-2.5 text-sm font-semibold text-background transition-transform hover:-translate-y-0.5">
-              Ask about my work
-            </AskTrigger>
-
             <a
               href="#projects"
-              className="rounded-lg border border-border-strong px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-accent hover:text-accent-soft"
+              className="rounded-lg bg-linear-to-r from-accent to-accent-2 px-5 py-2.5 text-sm font-semibold text-background transition-transform hover:-translate-y-0.5"
             >
               View my work
+            </a>
+
+            <a
+              href="/playground"
+              className="rounded-lg border border-border-strong px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-accent hover:text-accent-soft"
+            >
+              Event loop playground
             </a>
 
             <a
