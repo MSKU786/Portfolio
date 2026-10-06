@@ -21,6 +21,26 @@ export const stats = [
   { value: "4+3", label: "Engineers & QA mentored" },
 ];
 
+/** What I'm focused on right now — surfaced in the About section. */
+export const now = {
+  focus:
+    "LLM evaluation pipelines, multi-agent RCA workflows, and semantic search at Interface AI.",
+  learning:
+    "Distributed systems internals — rebuilding Redis from scratch in Go.",
+};
+
+/** The handful of tools I reach for daily. A condensed view of `skills`. */
+export const coreStack = [
+  "TypeScript",
+  "Node.js",
+  "Python",
+  "PostgreSQL",
+  "Pinecone",
+  "AWS",
+  "Kubernetes",
+  "Vertex AI",
+];
+
 export type Experience = {
   company: string;
   companyUrl?: string;

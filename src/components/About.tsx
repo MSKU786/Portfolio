@@ -1,6 +1,6 @@
 import { Section } from "@/components/Section";
 import { Reveal } from "@/components/Reveal";
-import { personal, stats } from "@/data/resume";
+import { personal, stats, now, coreStack } from "@/data/resume";
 
 export function About() {
   return (
@@ -29,6 +29,39 @@ export function About() {
             client conversations that come with shipping to regulated
             industries.
           </p>
+
+          {/* What I'm on right now — a compact, scannable focus callout. */}
+          <dl className="space-y-3 rounded-xl border border-border bg-surface/60 p-5">
+            <div className="flex gap-3">
+              <dt className="inline-flex shrink-0 items-center gap-2 font-mono text-xs uppercase tracking-wide text-accent-2">
+                <span className="live-dot size-1.5 rounded-full bg-live" />
+                Now
+              </dt>
+              <dd className="text-sm leading-relaxed text-foreground">
+                {now.focus}
+              </dd>
+            </div>
+            <div className="flex gap-3">
+              <dt className="shrink-0 font-mono text-xs uppercase tracking-wide text-subtle">
+                Learning
+              </dt>
+              <dd className="text-sm leading-relaxed text-muted">
+                {now.learning}
+              </dd>
+            </div>
+          </dl>
+
+          {/* Core stack chips — the condensed daily toolkit. */}
+          <div className="flex flex-wrap gap-2 pt-1">
+            {coreStack.map((item) => (
+              <span
+                key={item}
+                className="rounded-full border border-border-strong bg-surface/70 px-3 py-1 font-mono text-xs text-muted"
+              >
+                {item}
+              </span>
+            ))}
+          </div>
         </Reveal>
 
         <Reveal delay={120}>
